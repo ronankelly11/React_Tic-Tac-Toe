@@ -12,7 +12,7 @@ function Square(props) {
     return (
     <button 
         className="square" 
-        onClick={() => props.onClick()} // This is now calling Board's onClick method to update the value in the Squares array, rather than Square changing and storing the value.
+        onClick={props.onClick} // This is now calling Board's onClick method to update the value in the Squares array, rather than Square changing and storing the value.
     >
         {props.value}
     </button>
@@ -24,14 +24,21 @@ class Board extends React.Component {
         super(props);
         this.state = {
             squares: Array(9).fill(null),
+            xIsNext: true,
         };
     }
 
     handleClick(i){
         // We slice (i.e. copy) as we don't want to mutate the squares array.
         const squares = this.state.squares.slice()
-        squares[i] = 'X';
-        this.setState({squares: squares})
+        if (calculateWinner(squares || squares[i])){
+            return;
+        }
+        squares[i] = this.state.xIsNext ? 'X' : 'O';
+        this.setState({
+            squares: squares,
+            xIsNext: !this.state.xIsNext
+        });
     }
 
 
@@ -45,7 +52,19 @@ class Board extends React.Component {
     }
 
     render() {
-        const status = 'Next player: X';
+        const winner = calculateWinner(this.state.squares)
+        /**
+         * let allows you to declare variables that are limited to the scope of a block statement, 
+         * or expression on which it is used, unlike the var keyword, which declares a variable globally, 
+         * or locally to an entire function regardless of block scope
+         * **/
+        let status;
+        if (winner){
+            status = 'Winner: ' + winner;
+        }
+        else{
+            status = 'Next Player: ' + (this.state.xIsNext ? 'X' : 'O')
+        }
 
         return (
         <div>
@@ -85,6 +104,26 @@ class Game extends React.Component {
         );
     }
 }
+
+function calculateWinner(squares) {
+    const lines = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+    for (let i = 0; i < lines.length; i++) {
+      const [a, b, c] = lines[i];
+      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+        return squares[a];
+      }
+    }
+    return null;
+  }
 
 // ========================================
 
