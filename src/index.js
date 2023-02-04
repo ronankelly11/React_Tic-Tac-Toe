@@ -2,23 +2,21 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 
-class Square extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            value: null,
-        };
-    }
-    render() {
-      return (
-        <button 
+function Square(props) {
+
+    // The onClick prop on the built-in DOM <button> component tells React to set up a click event listener.
+    // When the button is clicked, React will call the onClick event handler that is defined in Square’s render() method.
+    // This event handler calls this.props.onClick(). The Square’s onClick prop was specified by the Board.
+    // Since the Board passed onClick={() => this.handleClick(i)} to Square, the Square calls the Board’s handleClick(i) when clicked.
+    // We have not defined the handleClick() method yet, so our code crashes. If you click a square now, you should see a red error screen saying something like “this.handleClick is not a function”.
+    return (
+    <button 
         className="square" 
-        onClick={() => this.setState({value: 'X'})}
-        >
-          {this.state.value}
-        </button>
-      );
-    }
+        onClick={() => props.onClick()} // This is now calling Board's onClick method to update the value in the Squares array, rather than Square changing and storing the value.
+    >
+        {props.value}
+    </button>
+    );
   }
   
 class Board extends React.Component {
@@ -28,8 +26,22 @@ class Board extends React.Component {
             squares: Array(9).fill(null),
         };
     }
+
+    handleClick(i){
+        // We slice (i.e. copy) as we don't want to mutate the squares array.
+        const squares = this.state.squares.slice()
+        squares[i] = 'X';
+        this.setState({squares: squares})
+    }
+
+
     renderSquare(i) {
-        return <Square value={i} />;
+        return (
+        <Square 
+            value={this.state.squares[i]} 
+            onClick={() => this.handleClick(i)}
+        />
+        );
     }
 
     render() {
